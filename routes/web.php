@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProcedureController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\AdminProcedureController;
+use App\Http\Controllers\AdminRequirementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -37,6 +38,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/procedures', [AdminProcedureController::class, 'store'])->name('admin.procedures.store');
         Route::get('/admin/procedures/{procedure}/edit', [AdminProcedureController::class, 'edit'])->name('admin.procedures.edit');
         Route::patch('/admin/procedures/{procedure}', [AdminProcedureController::class, 'update'])->name('admin.procedures.update');
+
+        Route::get('/admin/requirements', [AdminRequirementController::class, 'index'])->name('admin.requirements.index');
+        Route::get('/admin/requirements/create', [AdminRequirementController::class, 'create'])->name('admin.requirements.create');
+        Route::post('/admin/requirements', [AdminRequirementController::class, 'store'])->name('admin.requirements.store');
+        Route::get('/admin/requirements/{requirement}/edit', [AdminRequirementController::class, 'edit'])->name('admin.requirements.edit');
+        Route::patch('/admin/requirements/{requirement}', [AdminRequirementController::class, 'update'])->name('admin.requirements.update');
     });
 });
 
