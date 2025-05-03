@@ -51,7 +51,7 @@
         </header>
         <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
 
-                 
+
 
                 <!-- Hero Section -->
                 <section class="flex-1 py-12 lg:p-20 bg-[#FDFDFC] dark:bg-[#0a0a0a]">
