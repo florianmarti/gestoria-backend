@@ -20,9 +20,9 @@ class ProcedureRequirement extends Model
         'is_required' => 'boolean',
     ];
 
-    public function procedure()
+    public function procedures()
     {
-        return $this->belongsTo(Procedure::class);
+        return $this->belongsToMany(Procedure::class);
     }
 
     public function documents()

@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     // Rutas para gestión de documentos
     Route::get('/procedures/{userProcedure}/documents/create', [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/procedures/{userProcedure}/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/procedures/{userProcedure}', [ProcedureController::class, 'show'])->name('procedures.show');
 
     // Rutas para administración
     Route::middleware('role:admin')->group(function () {

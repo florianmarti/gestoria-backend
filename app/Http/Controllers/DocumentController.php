@@ -19,7 +19,7 @@ class DocumentController extends Controller
     public function create(UserProcedure $userProcedure)
     {
         $this->authorize('view', $userProcedure);
-        $requirements = $userProcedure->procedure->requirements;
+        $requirements = $userProcedure->procedure->requirements->unique('id');
         $existingDocuments = $userProcedure->documents->keyBy('procedure_requirement_id');
         return view('documents.create', compact('userProcedure', 'requirements', 'existingDocuments'));
     }
@@ -28,37 +28,45 @@ class DocumentController extends Controller
      * Procesa la carga del documento.
      */
     public function store(Request $request, UserProcedure $userProcedure)
-    {
-        $this->authorize('view', $userProcedure);
+{
+    $this->authorize('view', $userProcedure);
 
-        $request->validate([
-            'requirement_id' => 'required|exists:procedure_requirements,id',
-            'file' => 'required_if:type,file|file|mimes:pdf,jpg,png|max:2048', // 2MB máx.
-            'value' => 'required_if:type,text|string|max:255',
-        ]);
+    $request->validate([
+        'requirement_id' => 'required|exists:procedure_requirements,id',
+        'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048', // Cambiado de file.* a file
+    ]);
 
-        $requirement = $userProcedure->procedure->requirements->find($request->requirement_id);
-        if (!$requirement) {
-            return back()->withErrors(['requirement_id' => 'El requisito no pertenece a este trámite.']);
-        }
-
-        $data = [
-            'user_procedure_id' => $userProcedure->id,
-            'procedure_requirement_id' => $request->requirement_id,
-            'status' => 'pending',
-        ];
-
-        if ($requirement->type === 'file' && $request->hasFile('file')) {
-            $file = $request->file('file');
-            $data['file_path'] = $file->store('documents', 'public');
-        } elseif ($requirement->type === 'text') {
-            $data['value'] = $request->value;
-        } else {
-            return back()->withErrors(['file' => 'El tipo de requisito no coincide con los datos proporcionados.']);
-        }
-
-        Document::create($data);
-
-        return redirect()->route('procedures.show', $userProcedure)->with('success', 'Documento subido con éxito.');
+    $requirement = $userProcedure->procedure->requirements->find($request->requirement_id);
+    if (!$requirement) {
+        return response()->json([
+            'success' => false,
+            'message' => 'El requisito no pertenece a este trámite.',
+        ], 422);
     }
+
+    if ($requirement->type !== 'file') {
+        return response()->json([
+            'success' => false,
+            'message' => 'El requisito seleccionado no es de tipo archivo.',
+        ], 422);
+    }
+
+    // Manejo del archivo único (Dropzone envía uno a la vez)
+    $file = $request->file('file');
+    $path = $file->store('documents', 'public');
+
+    $document = Document::create([
+        'user_procedure_id' => $userProcedure->id,
+        'procedure_requirement_id' => $request->requirement_id,
+        'file_path' => $path,
+        'status' => 'pending',
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Archivo subido con éxito.',
+        'document' => $document,
+        'file_path' => Storage::url($path) // URL pública del archivo
+    ], 200);
+}
 }

@@ -22,8 +22,8 @@ class Procedure extends Model
 
     public function requirements()
     {
-        return $this->hasMany(ProcedureRequirement::class);
-    }
+        return $this->belongsToMany(ProcedureRequirement::class);
+ }
 
     public function userProcedures()
     {

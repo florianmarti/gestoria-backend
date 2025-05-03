@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Subir Documento para ') . $userProcedure->procedure->name }}
+            {{ __('Subir Documento') }}
         </h2>
     </x-slot>
 
@@ -9,72 +9,83 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form action="{{ route('documents.store', $userProcedure) }}" method="POST" enctype="multipart/form-data">
+                    <form id="document-upload-form" action="{{ route('documents.store', $userProcedure) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-4">
-                            <label for="requirement_id" class="block text-sm font-medium text-gray-700">{{ __('Seleccionar Requisito') }}</label>
-                            <select name="requirement_id" id="requirement_id" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" onchange="updateFilePond(this)">
+                            <label for="requirement_id" class="block text-sm font-medium text-gray-700">{{ __('Requisito') }}</label>
+                            <select name="requirement_id" id="requirement_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                                <option value="">{{ __('Selecciona un requisito') }}</option>
                                 @foreach ($requirements as $requirement)
-                                    @if (!$existingDocuments->has($requirement->id))
-                                        <option value="{{ $requirement->id }}" data-type="{{ $requirement->type }}">{{ $requirement->name }} ({{ $requirement->type === 'file' ? 'Archivo' : 'Texto' }})</option>
+                                    @if ($requirement->type === 'file' && !isset($existingDocuments[$requirement->id]))
+                                        <option value="{{ $requirement->id }}">{{ $requirement->name }} ({{ $requirement->type === 'file' ? 'Archivo' : 'Texto' }})</option>
                                     @endif
                                 @endforeach
                             </select>
                             @error('requirement_id')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-                        <div class="mb-4" id="file_input" style="display: none;">
-                            <label for="file" class="block text-sm font-medium text-gray-700">{{ __('Archivo (PDF, JPG, PNG)') }}</label>
-                            <input type="file" name="file" id="file" class="filepond">
+                        <div class="mb-4">
+                            <label for="dropzone" class="block text-sm font-medium text-gray-700">{{ __('Seleccionar archivos') }}</label>
+                            <div id="dropzone" class="dropzone mt-1 border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
+                                <div class="dz-message">
+                                    <p class="text-gray-500">{{ __('Arrastra y suelta archivos aquí o haz clic para seleccionar') }}</p>
+                                </div>
+                            </div>
                             @error('file')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
-                        <div class="mb-4" id="text_input" style="display: none;">
-                            <label for="value" class="block text-sm font-medium text-gray-700">{{ __('Valor') }}</label>
-                            <input type="text" name="value" id="value" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
-                            @error('value')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">{{ __('Subir Documento') }}</button>
-                        <a href="{{ route('procedures.show', $userProcedure) }}" class="bg-gray-500 text-white px-4 py-2 rounded ml-2">{{ __('Volver') }}</a>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                            {{ __('Subir Documento') }}
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- FilePond JS -->
-    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
-    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
-    <script>
-        FilePond.registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
-        const inputElement = document.querySelector('input[type="file"]');
-        const pond = FilePond.create(inputElement, {
-            labelIdle: 'Arrastra y suelta tu archivo o <span class="filepond--label-action">Selecciona</span>',
-            acceptedFileTypes: ['application/pdf', 'image/jpeg', 'image/png'],
-            maxFileSize: '2MB',
-            allowMultiple: false,
-            instantUpload: false,
-            imagePreviewHeight: 100,
-        });
+    @push('scripts')
+        <script type="module">
+            import Dropzone from 'dropzone';
 
-        function updateFilePond(select) {
-            const fileInput = document.getElementById('file_input');
-            const textInput = document.getElementById('text_input');
-            const type = select.options[select.selectedIndex].dataset.type;
-            fileInput.style.display = type === 'file' ? 'block' : 'none';
-            textInput.style.display = type === 'text' ? 'block' : 'none';
-        }
+            const dropzone = new Dropzone('#dropzone', {
+                url: "{{ route('documents.store', $userProcedure) }}",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                maxFilesize: 2,
+                acceptedFiles: '.pdf,.jpg,.jpeg,.png',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                paramName: 'file',
+                init: function () {
+                    const form = document.getElementById('document-upload-form');
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    const requirementInput = document.getElementById('requirement_id');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const select = document.getElementById('requirement_id');
-            if (select.options.length > 0) {
-                updateFilePond(select);
-            }
-        });
-    </script>
+                    this.on('sendingmultiple', function (data, xhr, formData) {
+                        formData.append('requirement_id', requirementInput.value);
+                    });
+
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        if (this.getQueuedFiles().length > 0 && requirementInput.value) {
+                            this.processQueue();
+                        } else {
+                            alert('Por favor, selecciona un requisito y al menos un archivo.');
+                        }
+                    });
+
+                    this.on('successmultiple', function (files, response) {
+                        window.location.href = "{{ route('procedures.show', $userProcedure) }}";
+                    });
+
+                    this.on('errormultiple', function (files, response) {
+                        alert('Error al subir los archivos: ' + (response.message || 'Intenta de nuevo.'));
+                    });
+                }
+            });
+        </script>
+    @endpush
 </x-app-layout>
