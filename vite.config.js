@@ -8,4 +8,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            'dropzone': 'dropzone/dist/dropzone.js'
+        }
+    }
 });

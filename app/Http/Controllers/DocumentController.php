@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\UserProcedure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
+use Illuminate\Support\Str;
 
 class DocumentController extends Controller
 {
@@ -27,46 +29,85 @@ class DocumentController extends Controller
     /**
      * Procesa la carga del documento.
      */
-    public function store(Request $request, UserProcedure $userProcedure)
-{
-    $this->authorize('view', $userProcedure);
 
-    $request->validate([
-        'requirement_id' => 'required|exists:procedure_requirements,id',
-        'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048', // Cambiado de file.* a file
-    ]);
+     public function store(Request $request, UserProcedure $userProcedure)
+     {
+         // Verificar autorización
+         $this->authorize('view', $userProcedure);
 
-    $requirement = $userProcedure->procedure->requirements->find($request->requirement_id);
-    if (!$requirement) {
-        return response()->json([
-            'success' => false,
-            'message' => 'El requisito no pertenece a este trámite.',
-        ], 422);
-    }
+         // Validación de entrada
+         $validated = $request->validate([
+             'requirement_id' => 'required|exists:procedure_requirements,id',
+             'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+         ]);
 
-    if ($requirement->type !== 'file') {
-        return response()->json([
-            'success' => false,
-            'message' => 'El requisito seleccionado no es de tipo archivo.',
-        ], 422);
-    }
+         try {
+             // Obtener el requisito relacionado
+             $requirement = $userProcedure->procedure->requirements()
+                 ->findOrFail($validated['requirement_id']);
 
-    // Manejo del archivo único (Dropzone envía uno a la vez)
-    $file = $request->file('file');
-    $path = $file->store('documents', 'public');
+             // Verificar que el requisito acepte archivos
+             if ($requirement->type !== 'file') {
+                 return response()->json([
+                     'success' => false,
+                     'message' => 'El requisito seleccionado no acepta archivos',
+                 ], 422);
+             }
 
-    $document = Document::create([
-        'user_procedure_id' => $userProcedure->id,
-        'procedure_requirement_id' => $request->requirement_id,
-        'file_path' => $path,
-        'status' => 'pending',
-    ]);
+             $file = $request->file('file');
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Archivo subido con éxito.',
-        'document' => $document,
-        'file_path' => Storage::url($path) // URL pública del archivo
-    ], 200);
-}
+             // Generar nombre único para el archivo
+             $fileName = $this->generateUniqueFileName($file);
+             $storagePath = "procedures/{$userProcedure->id}/documents";
+
+             // Almacenar el archivo
+             $path = $file->storeAs($storagePath, $fileName, 'public');
+
+             // Crear registro en la base de datos
+             $document = Document::updateOrCreate(
+                 [
+                     'user_procedure_id' => $userProcedure->id,
+                     'procedure_requirement_id' => $requirement->id
+                 ],
+                 [
+                     'file_path' => $path,
+                     'status' => 'pending'
+                 ]
+             );
+
+             // Respuesta exitosa
+             return response()->json([
+                 'success' => true,
+                 'message' => 'Archivo subido correctamente',
+                 'document' => $document,
+                 'file_url' => Storage::url($path),
+                 'file_name' => $file->getClientOriginalName(),
+                 'file_size' => $file->getSize(),
+                 'file_type' => $file->getMimeType(),
+                 'requirement_name' => $requirement->name
+             ]);
+
+         } catch (\Exception $e) {
+             // Limpieza en caso de error
+             if (isset($path) && Storage::disk('public')->exists($path)) {
+                 Storage::disk('public')->delete($path);
+             }
+
+             // Respuesta de error
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Error al procesar el archivo',
+                 'error' => config('app.debug') ? $e->getMessage() : null,
+                 'file' => $request->file('file') ? $request->file('file')->getClientOriginalName() : null
+             ], 500);
+         }
+     }
+
+     /**
+      * Genera un nombre único para el archivo
+      */
+     private function generateUniqueFileName($file)
+     {
+         return Str::uuid() . '.' . $file->getClientOriginalExtension();
+     }
 }

@@ -11,7 +11,11 @@ class Document extends Model
         'file_path',
         'value',
         'status',
+        'original_name',
+        'thumbnail_path',
         'rejection_reason',
+        'file_size',
+        'mime_type'
     ];
 
     protected $casts = [

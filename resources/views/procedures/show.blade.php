@@ -19,7 +19,7 @@
                         <p class="text-sm">Honorarios: ${{ $userProcedure->procedure->fee }}</p>
                     </div>
 
-                    <h3 class="text-lg font-semibold mb-4">{{ __('Documentos Subidos') }}</h3>
+                    <h3 class="text-lg font-semibold mb-4">{{ __('Documentes Subidos') }}</h3>
                     @if ($userProcedure->documents->isEmpty())
                         <p class="text-sm text-gray-600">{{ __('No se han subido documentos aún.') }}</p>
                     @else
