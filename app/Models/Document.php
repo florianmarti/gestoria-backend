@@ -6,16 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 class Document extends Model
 {
     protected $fillable = [
-        'user_procedure_id',
-        'procedure_requirement_id',
-        'file_path',
-        'value',
-        'status',
-        'original_name',
-        'thumbnail_path',
-        'rejection_reason',
-        'file_size',
-        'mime_type'
+        "user_procedure_id",
+        "procedure_requirement_id",
+        "file_path",
+        "thumbnail_path",
+        "value",
+        "status",
+        "rejection_reason",
     ];
 
     protected $casts = [

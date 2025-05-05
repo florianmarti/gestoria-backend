@@ -10,7 +10,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            'dropzone': 'dropzone/dist/dropzone.js'
+            'dropzone': 'dropzone/dist/dropzone'
         }
     }
 });

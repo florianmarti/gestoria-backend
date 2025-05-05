@@ -11,71 +11,63 @@ class AdminProcedureController extends Controller
     public function index()
     {
         $procedures = Procedure::all();
-        return view('admin.procedures.index', compact('procedures'));
+        return view("admin.procedures.index", compact("procedures"));
     }
 
     public function create()
     {
         $requirements = ProcedureRequirement::all();
-        return view('admin.procedures.create', compact('requirements'));
+        return view("admin.procedures.create", compact("requirements"));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|in:automotor,impositivo,otros',
-            'description' => 'nullable|string',
-            'fee' => 'required|numeric|min:0',
-            'estimated_days' => 'required|integer|min:1',
-            'requirements' => 'nullable|array',
-            'requirements.*' => 'exists:procedure_requirements,id',
+        $validated = $request->validate([
+            "name" => "required|string|max:255",
+            "category" => "required|in:Vehiculos,impositivo,otros",
+            "fee" => "required|numeric",
+            "estimated_days" => "required|integer",
+            "description" => "nullable|string",
+            "requirements" => "array",
         ]);
 
-        $procedure = Procedure::create([
-            'name' => $request->name,
-            'category' => $request->category,
-            'description' => $request->description,
-            'fee' => $request->fee,
-            'estimated_days' => $request->estimated_days,
-        ]);
+        $procedure = Procedure::create($validated);
 
-        if ($request->requirements) {
-            $procedure->requirements()->sync($request->requirements);
+        if ($request->has("requirements")) {
+            $procedure->requirements()->attach($request->input("requirements"));
         }
 
-        return redirect()->route('admin.procedures.index')->with('success', 'Trámite creado con éxito.');
+        return redirect()->route("admin.procedures.index")->with("success", "Trámite creado correctamente.");
     }
 
     public function edit(Procedure $procedure)
     {
         $requirements = ProcedureRequirement::all();
-        $selectedRequirements = $procedure->requirements->pluck('id')->toArray();
-        return view('admin.procedures.edit', compact('procedure', 'requirements', 'selectedRequirements'));
+        return view("admin.procedures.edit", compact("procedure", "requirements"));
     }
 
     public function update(Request $request, Procedure $procedure)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|in:automotor,impositivo,otros',
-            'description' => 'nullable|string',
-            'fee' => 'required|numeric|min:0',
-            'estimated_days' => 'required|integer|min:1',
-            'requirements' => 'nullable|array',
-            'requirements.*' => 'exists:procedure_requirements,id',
+        $validated = $request->validate([
+            "name" => "required|string|max:255",
+            "category" => "required|in:Vehiculos,impositivo,otros",
+            "fee" => "required|numeric",
+            "estimated_days" => "required|integer",
+            "description" => "nullable|string",
+            "requirements" => "array",
         ]);
 
-        $procedure->update([
-            'name' => $request->name,
-            'category' => $request->category,
-            'description' => $request->description,
-            'fee' => $request->fee,
-            'estimated_days' => $request->estimated_days,
-        ]);
+        $procedure->update($validated);
 
-        $procedure->requirements()->sync($request->requirements ?? []);
+        if ($request->has("requirements")) {
+            $procedure->requirements()->sync($request->input("requirements"));
+        }
 
-        return redirect()->route('admin.procedures.index')->with('success', 'Trámite actualizado con éxito.');
+        return redirect()->route("admin.procedures.index")->with("success", "Trámite actualizado correctamente.");
+    }
+    public function destroy(Procedure $procedure)
+    {
+        $procedure->delete();
+        return redirect()->route("admin.procedures.index")->with("success", "Trámite eliminado correctamente.");
     }
 }

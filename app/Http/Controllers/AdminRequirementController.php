@@ -22,7 +22,7 @@ class AdminRequirementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:file,text',
+            'file_type' => 'required|in:file',
             'is_required' => 'boolean',
             'description' => 'nullable|string',
         ]);
@@ -46,7 +46,7 @@ class AdminRequirementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:file,text',
+            'file_type' => 'required|in:file',
             'is_required' => 'boolean',
             'description' => 'nullable|string',
         ]);
@@ -59,5 +59,10 @@ class AdminRequirementController extends Controller
         ]);
 
         return redirect()->route('admin.requirements.index')->with('success', 'Requisito actualizado con éxito.');
+    }
+    public function destroy(ProcedureRequirement $requirement)
+    {
+        $requirement->delete();
+        return redirect()->route("admin.requirements.index")->with("success", "Requisito eliminado correctamente.");
     }
 }
