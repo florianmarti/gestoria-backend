@@ -21,11 +21,13 @@
                             @enderror
                         </div>
                         <div class="mb-4">
-                            <label for="file_type" class="block text-sm font-medium text-gray-700">{{ __("Tipo de Archivo") }}</label>
-                            <select name="file_type" id="file_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                                <option value="file">{{ __("Archivo (Imágenes o PDF)") }}</option>
+                            <label for="type"
+                                class="block text-sm font-medium text-gray-700">{{ __('Tipo de Archivo') }}</label>
+                            <select name="type" id="type"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                                <option value="file">{{ __('Archivo (Imágenes o PDF)') }}</option>
                             </select>
-                            @error("file_type")
+                            @error('type')
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>

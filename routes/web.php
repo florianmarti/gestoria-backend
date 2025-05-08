@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminDocumentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProcedureController;
 use App\Http\Controllers\DocumentController;
@@ -60,7 +61,13 @@ Route::middleware("auth")->group(function () {
             Route::patch("/{requirement}", [AdminRequirementController::class, "update"])->name("admin.requirements.update");
             Route::delete("/admin/requirements/{requirement}", [AdminRequirementController::class, "destroy"])->name("admin.requirements.destroy");
         });
-
+        // Documentos administrativos
+            Route::prefix("documents")->group(function () {
+            Route::get("/", [AdminDocumentController::class, "index"])->name("admin.documents.index");
+            Route::delete("/{document}", [AdminDocumentController::class, "destroy"])->name("admin.documents.destroy");
+            Route::patch("/{document}/approve", [AdminDocumentController::class, "approve"])->name("admin.documents.approve");
+            Route::patch("/{document}/reject", [AdminDocumentController::class, "reject"])->name("admin.documents.reject");
+        });
         // Notificaciones administrativas
         Route::get("/notifications", [AdminNotificationController::class, "index"])->name("admin.notifications.index");
     });

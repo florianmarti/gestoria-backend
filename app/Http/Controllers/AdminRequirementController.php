@@ -22,15 +22,15 @@ class AdminRequirementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'file_type' => 'required|in:file',
-            'is_required' => 'boolean',
+            'type' => 'required|in:file',
+            'is_required' => 'required|in:0,1',
             'description' => 'nullable|string',
         ]);
 
         ProcedureRequirement::create([
             'name' => $request->name,
             'type' => $request->type,
-            'is_required' => $request->is_required ?? false,
+            'is_required' => (bool) ($request->is_required ?? false),
             'description' => $request->description,
         ]);
 
@@ -46,7 +46,7 @@ class AdminRequirementController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'file_type' => 'required|in:file',
+            'type' => 'required|in:file',
             'is_required' => 'boolean',
             'description' => 'nullable|string',
         ]);
