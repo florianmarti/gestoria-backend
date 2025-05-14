@@ -5,6 +5,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
+    // Constantes para los estados posibles
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
         "user_procedure_id",
         "procedure_requirement_id",
@@ -17,6 +22,8 @@ class Document extends Model
 
     protected $casts = [
         'status' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function userProcedure()

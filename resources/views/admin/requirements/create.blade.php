@@ -39,7 +39,7 @@
                                 <option value="file" {{ old('file_type') == 'file' ? 'selected' : '' }}>{{ __("Archivo (Imágenes o PDF)") }}</option>
                                 <option value="text" {{ old('file_type') == 'text' ? 'selected' : '' }}>{{ __("Texto") }}</option>
                             </select>
-                            @error("file_type")
+                            @error('file_type')
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror
                         </div>

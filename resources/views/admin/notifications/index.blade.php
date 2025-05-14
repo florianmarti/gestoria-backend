@@ -9,11 +9,11 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    @if ($notifications->isEmpty())
+                    @if ($filteredNotifications->isEmpty())
                         <p>{{ __("No hay notificaciones nuevas.") }}</p>
                     @else
                         <ul class="space-y-4">
-                            @foreach ($notifications as $notification)
+                            @foreach ($filteredNotifications as $notification)
                                 <li class="p-4 bg-gray-100 rounded">
                                     <p>{{ $notification->data["message"] }}</p>
                                     @if (isset($notification->data["user_procedure_id"]))

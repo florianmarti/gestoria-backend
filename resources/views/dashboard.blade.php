@@ -17,8 +17,27 @@
 
                     <h3 class="text-lg font-semibold mb-4">{{ __("Panel de Control") }}</h3>
                     <p class="text-sm text-gray-600 mb-6">
-                        {{ auth()->user()->role === "admin" ? __("Gestiona trámites y requisitos desde aquí.") : __("Explora y comienza nuevos trámites.") }}
+                        {{ auth()->user()->role === "admin" ? __("Gestiona trámites, requisitos y documentos desde aquí.") : __("Explora y comienza nuevos trámites.") }}
                     </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    @if (auth()->user()->role === "admin")
+                        <!-- Panel de estadísticas -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg shadow">
+                                <h4 class="text-sm font-medium text-blue-800">{{ __("Trámites Completados") }}</h4>
+                                <p class="text-2xl font-bold text-blue-600">{{ \App\Models\UserProcedure::where('status', 'completed')->count() }}</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg shadow">
+                                <h4 class="text-sm font-medium text-green-800">{{ __("Requisitos Totales") }}</h4>
+                                <p class="text-2xl font-bold text-green-600">{{ \App\Models\ProcedureRequirement::count() }}</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg shadow">
+                                <h4 class="text-sm font-medium text-purple-800">{{ __("Documentos Pendientes") }}</h4>
+                                <p class="text-2xl font-bold text-purple-600">{{ \App\Models\Document::where('status', 'pending')->count() }}</p>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         @if (auth()->user()->role === "client")
@@ -41,18 +60,24 @@
                                 @endif
                             </a>
                         @elseif (auth()->user()->role === "admin")
-                            <!-- Botones para administradores -->
-                            <a href="{{ route('admin.procedures.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Tarjetas para administradores -->
+                            <a href="{{ route('admin.procedures.index') }}" class="bg-blue-100 text-blue-800 p-4 rounded-lg shadow hover:bg-blue-200 transition flex items-center justify-center text-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
-                                {{ __("Gestionar Trámites") }}
+                                <span class="text-sm font-medium">{{ __("Gestionar Trámites") }}</span>
                             </a>
-                            <a href="{{ route('admin.requirements.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('admin.requirements.index') }}" class="bg-green-100 text-green-800 p-4 rounded-lg shadow hover:bg-green-200 transition flex items-center justify-center text-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                {{ __("Gestionar Requisitos") }}
+                                <span class="text-sm font-medium">{{ __("Gestionar Requisitos") }}</span>
+                            </a>
+                            <a href="{{ route('admin.documents.index') }}" class="bg-purple-100 text-purple-800 p-4 rounded-lg shadow hover:bg-purple-200 transition flex items-center justify-center text-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                <span class="text-sm font-medium">{{ __("Gestionar Documentos") }}</span>
                             </a>
                             <a href="{{ route('admin.notifications.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -88,6 +113,30 @@
                                                 </form>
                                             </div>
                                         </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <!-- Notificaciones para clientes -->
+                        <h3 class="text-lg font-semibold mt-6 mb-4">{{ __("Notificaciones") }}</h3>
+                        @if (auth()->user()->notifications->isEmpty())
+                            <p class="text-sm text-gray-600">{{ __("No tienes notificaciones.") }}</p>
+                        @else
+                            <div class="grid grid-cols-1 gap-4">
+                                @foreach (auth()->user()->notifications as $notification)
+                                    <div class="bg-white p-4 shadow-sm rounded-lg">
+                                        <p class="text-sm text-gray-600">
+                                            {{ $notification->data['message'] }}
+                                        </p>
+                                        @if (isset($notification->data['rejection_reason']))
+                                            <p class="text-sm text-red-600">
+                                                {{ __("Motivo") }}: {{ $notification->data['rejection_reason'] }}
+                                            </p>
+                                        @endif
+                                        <p class="text-sm text-gray-600">
+                                            {{ __("Fecha") }}: {{ $notification->created_at->format('d/m/Y H:i') }}
+                                        </p>
                                     </div>
                                 @endforeach
                             </div>

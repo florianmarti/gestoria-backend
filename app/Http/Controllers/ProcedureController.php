@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\User;
-
+use Illuminate\Support\Facades\DB;
 class ProcedureController extends Controller
 {
     use AuthorizesRequests;
@@ -25,15 +25,11 @@ class ProcedureController extends Controller
         return view("procedures.index", compact("procedures"));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        // Redirigir a administradores
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            return redirect()->route('admin.procedures.index');
-        }
-
-        $procedures = Procedure::orderBy('name', 'asc')->get();
-        return view('procedures.create', compact('procedures'));
+        $procedures = Procedure::all();
+        $selectedProcedureId = $request->query('procedure_id');
+        return view("procedures.create", compact("procedures", "selectedProcedureId"));
     }
 
     public function store(Request $request)
@@ -96,6 +92,13 @@ class ProcedureController extends Controller
     public function destroy(UserProcedure $userProcedure)
     {
         $this->authorize("delete", $userProcedure);
+
+        // Eliminar notificaciones asociadas al trámite
+        DB::table('notifications')
+            ->where('type', NewProcedureStartedNotification::class)
+            ->whereJsonContains('data->user_procedure_id', $userProcedure->id)
+            ->delete();
+
         $userProcedure->delete();
         return redirect()->route("dashboard")->with("success", "Trámite eliminado correctamente.");
     }

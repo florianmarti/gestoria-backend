@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('procedure_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->enum('type', ['file', 'text']);
+            $table->enum('type', ['file']);
             $table->boolean('is_required')->default(true);
             $table->text('description')->nullable();
             $table->timestamps();
