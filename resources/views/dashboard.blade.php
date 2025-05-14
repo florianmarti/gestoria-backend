@@ -20,14 +20,25 @@
                         {{ auth()->user()->role === "admin" ? __("Gestiona trámites y requisitos desde aquí.") : __("Explora y comienza nuevos trámites.") }}
                     </p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         @if (auth()->user()->role === "client")
-                            <!-- Botón para clientes -->
+                            <!-- Botones para clientes -->
                             <a href="{{ route('procedures.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
                                 {{ __("Ver Trámites Disponibles") }}
+                            </a>
+                            <a href="{{ route('notifications.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                {{ __("Ver Notificaciones") }}
+                                @if (auth()->user()->unreadNotifications->count() > 0)
+                                    <span class="ml-2 bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-1">
+                                        {{ auth()->user()->unreadNotifications->count() }}
+                                    </span>
+                                @endif
                             </a>
                         @elseif (auth()->user()->role === "admin")
                             <!-- Botones para administradores -->
@@ -42,6 +53,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 {{ __("Gestionar Requisitos") }}
+                            </a>
+                            <a href="{{ route('admin.notifications.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                {{ __("Ver Notificaciones") }}
                             </a>
                         @endif
                     </div>
@@ -64,7 +81,6 @@
                                         <div class="flex items-center justify-between mt-2">
                                             <a href="{{ route('procedures.show', $userProcedure) }}" class="text-blue-500 underline">{{ __("Ver Detalles") }}</a>
                                             <div>
-
                                                 <form action="{{ route('procedures.destroy', $userProcedure) }}" method="POST" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')

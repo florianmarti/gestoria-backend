@@ -16,18 +16,33 @@ class ProcedureController extends Controller
 
     public function index()
     {
-        $procedures = Procedure::all();
+        // Redirigir a administradores
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return redirect()->route('admin.procedures.index');
+        }
+
+        $procedures = Procedure::orderBy('name', 'asc')->paginate(10);
         return view("procedures.index", compact("procedures"));
     }
 
     public function create()
     {
-        $procedures = Procedure::all();
-        return view("procedures.create", compact("procedures"));
+        // Redirigir a administradores
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return redirect()->route('admin.procedures.index');
+        }
+
+        $procedures = Procedure::orderBy('name', 'asc')->get();
+        return view('procedures.create', compact('procedures'));
     }
 
     public function store(Request $request)
     {
+        // Redirigir a administradores
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return redirect()->route('admin.procedures.index');
+        }
+
         $validated = $request->validate([
             "procedure_id" => "required|exists:procedures,id",
         ]);
@@ -57,7 +72,7 @@ class ProcedureController extends Controller
     public function edit(UserProcedure $userProcedure)
     {
         $this->authorize("update", $userProcedure);
-        $procedures = Procedure::all();
+        $procedures = Procedure::orderBy('name', 'asc')->get();
         return view("procedures.edit", compact("userProcedure", "procedures"));
     }
 

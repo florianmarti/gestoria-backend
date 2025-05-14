@@ -28,6 +28,7 @@ class DocumentUploadedNotification extends Notification
             "message" => "El usuario " . $this->document->userProcedure->user->name . " ha subido un documento para el trámite: " . $this->document->userProcedure->procedure->name,
             "document_id" => $this->document->id,
             "user_procedure_id" => $this->document->userProcedure->id,
+            "url" => route('admin.procedures.documents', $this->document->userProcedure->id),
         ];
     }
 }

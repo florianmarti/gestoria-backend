@@ -15,23 +15,26 @@ class AdminRequirementController extends Controller
 
     public function create()
     {
-        return view('admin.requirements.create');
+        $procedures = \App\Models\Procedure::all(); // Cargar procedimientos para el formulario
+        return view('admin.requirements.create', compact('procedures'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'procedure_id' => 'required|exists:procedures,id',
             'name' => 'required|string|max:255',
-            'file_type' => 'required|in:file',
+            'file_type' => 'required|in:file,text',
             'is_required' => 'boolean',
             'description' => 'nullable|string',
         ]);
 
         ProcedureRequirement::create([
-            'name' => $request->name,
-            'type' => $request->type,
-            'is_required' => $request->is_required ?? false,
-            'description' => $request->description,
+            'procedure_id' => $validated['procedure_id'],
+            'name' => $validated['name'],
+            'type' => $validated['file_type'],
+            'is_required' => $validated['is_required'] ?? false,
+            'description' => $validated['description'],
         ]);
 
         return redirect()->route('admin.requirements.index')->with('success', 'Requisito creado con éxito.');
@@ -39,27 +42,31 @@ class AdminRequirementController extends Controller
 
     public function edit(ProcedureRequirement $requirement)
     {
-        return view('admin.requirements.edit', compact('requirement'));
+        $procedures = \App\Models\Procedure::all();
+        return view('admin.requirements.edit', compact('requirement', 'procedures'));
     }
 
     public function update(Request $request, ProcedureRequirement $requirement)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'procedure_id' => 'required|exists:procedures,id',
             'name' => 'required|string|max:255',
-            'file_type' => 'required|in:file',
+            'file_type' => 'required|in:file,text',
             'is_required' => 'boolean',
             'description' => 'nullable|string',
         ]);
 
         $requirement->update([
-            'name' => $request->name,
-            'type' => $request->type,
-            'is_required' => $request->is_required ?? false,
-            'description' => $request->description,
+            'procedure_id' => $validated['procedure_id'],
+            'name' => $validated['name'],
+            'type' => $validated['file_type'],
+            'is_required' => $validated['is_required'] ?? false,
+            'description' => $validated['description'],
         ]);
 
         return redirect()->route('admin.requirements.index')->with('success', 'Requisito actualizado con éxito.');
     }
+
     public function destroy(ProcedureRequirement $requirement)
     {
         $requirement->delete();
